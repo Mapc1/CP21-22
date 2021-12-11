@@ -1192,7 +1192,9 @@ Valorização:
 pairsList :: [a] -> [(a, a)]
 pairsList = anaList (g_pairsList)
 
-g_pairsList = undefined
+g_pairsList = either g1 g2 . outList . getEvenBlock where
+     g1 = i1 . id
+     g2 = i2 . split (split p1 (head . p2)) (tail . p2)
 
 classicMerkleTree :: Hashable a => [a] -> FTree Integer Integer
 classicMerkleTree = (hyloNEList conquer divide) . (map Main.hash)
