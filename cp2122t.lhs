@@ -1215,12 +1215,16 @@ conquer = either head joinMerkleTree where
 wc_w_final :: [Char] -> Int
 wc_w_final = wrapper . worker
 worker = cataList (either g1 g2)
-wrapper = undefined
+wrapper = p2
 \end{code}
 Gene de |worker|:
 \begin{code}
-g1 = undefined
-g2 = undefined
+g1 () = (True,0)
+g2 (c,(a,b)) = if ((not (sep c)) && a) then (sep c, (b+1)) else (sep c, b) where
+     sep c = c == ' ' || c == '\n' || c == '\t'
+
+prop_RevRev xs = wc_w_final wc_test == 9
+  where types = xs::[Int]
 \end{code}
 Genes |h = either h1 h2| e |k = either k1 k2| identificados no cálculo:
 \begin{code}
