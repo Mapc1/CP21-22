@@ -1276,7 +1276,7 @@ substM :: b -> Int -> Int -> [[b]] -> [[b]]
 substM x lin = cataNat (either g1 g2) 
   where g1 = const (\(c:cs) -> subst x lin c : cs)
         g2 f (c:cs) = c : f cs
-\end {code}
+\end{code}
 
 \begin{code}
 scout :: Map -> Pos -> Pos -> Int -> [[Pos]]
