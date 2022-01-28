@@ -1260,16 +1260,23 @@ Inserir a partir daqui o resto da resolução deste problema:
 \subsection*{Problema 4}
 
 \begin{code}
-pairL :: [a] -> [(a,a)]
 pairL = anaList g where
-  g = undefined
+     g [x] = Left (x,x)
+     g (h:i:t) = Right ((h,i),(i:t))
 \end{code}
 
 \begin{code}
 markMap :: [Pos] -> Map -> Map
 markMap l = cataList (either (const id) f2) (pairL l) where
-  f2 = undefined
-\end{code}
+  f2 = composicao . ((uncurry (uncurry substM) . assocl) . split (uncurry toCell) p1 >< id) 
+  
+composicao (f,g) = f . g
+
+substM :: b -> Int -> Int -> [[b]] -> [[b]]
+substM x lin = cataNat (either g1 g2) 
+  where g1 = const (\(c:cs) -> subst x lin c : cs)
+        g2 f (c:cs) = c : f cs
+\end {code}
 
 \begin{code}
 scout :: Map -> Pos -> Pos -> Int -> [[Pos]]
