@@ -1260,7 +1260,7 @@ Inserir a partir daqui o resto da resolução deste problema:
 
 ....
 \begin{code}
-data XNary u i = NLeaf u | NNode i [XNary u i]
+data XNary u i = NLeaf u | NNode i [XNary u i] deriving (Show,Eq)
 
 inXNary (Left u) = NLeaf u
 inXNary (Right (i, l)) = NNode i l
