@@ -1239,22 +1239,43 @@ k2 = undefined
 
 \begin{code}
 inX :: Either u (i, (X u i, X u i)) -> X u i
-inX = undefined
+inX (Left u) = XLeaf u
+inX (Right (i, (l, r))) = Node i l r
 
-outX (XLeaf u) = undefined
-outX (Node i l r) = undefined
+outX (XLeaf u) = i1 u
+outX (Node i l r) = i2 (i, (l, r))
 
-baseX f h g = undefined
+baseX f h g = f -|- (h><(g><g))
 
-recX f = undefined
+recX f = baseX id id f
 
-cataX g = undefined
+cataX g = g . (recX (cataX g)) . outX
+
+anaX g = inX . (recX (anaX g)) . g
+
+hyloX h g = cataX h . cataX g
 \end{code}
 
 Inserir a partir daqui o resto da resolução deste problema:
 
 ....
 \begin{code}
+data XNary u i = NLeaf u | NNode i [XNary u i]
+
+inXNary (Left u) = NLeaf u
+inXNary (Right (i, l)) = NNode i l
+
+outXNary (NLeaf u) = i1 u
+outXNary (NNode i l) = i2 (i, l)
+
+baseXNary f h g = f -|- (h >< map g)
+
+recXNary f = baseXNary id id f
+
+cataXNary g = g . (recXNary (cataXNary g)) . outXNary
+
+anaXNary g = inXNary . (recXNary (anaXNary g)) . g
+
 \end{code}
 
 \subsection*{Problema 4}
@@ -1262,7 +1283,8 @@ Inserir a partir daqui o resto da resolução deste problema:
 \begin{code}
 pairL :: [a] -> [(a,a)]
 pairL = anaList g where
-  g = undefined
+     g [x] = Left (x,x)
+     g (h:i:t) = Right ((h,i),(i:t))
 \end{code}
 
 \begin{code}
