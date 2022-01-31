@@ -145,15 +145,15 @@
 
 \begin{center}\large
 \begin{tabular}{ll}
-\textbf{Grupo} nr. & 99 (preencher)
+\textbf{Grupo} nr. & 14
 \\\hline
-a11111 & Nome1 (preencher)
+a93179 & Rui Monteiro
 \\
-a22222 & Nome2 (preencher)
+a93201 & Rodrigo Rodrigues
 \\
-a33333 & Nome3 (preencher)
+a03324 & Daniel Azevedo
 \\
-a44444 & Nome4 (preencher, se aplicável, ou apagar)
+a93283 & Marco Costa
 \end{tabular}
 \end{center}
 
@@ -1281,7 +1281,6 @@ anaXNary g = inXNary . (recXNary (anaXNary g)) . g
 \subsection*{Problema 4}
 
 \begin{code}
-pairL :: [a] -> [(a,a)]
 pairL = anaList g where
      g [x] = Left (x,x)
      g (h:i:t) = Right ((h,i),(i:t))
@@ -1290,7 +1289,14 @@ pairL = anaList g where
 \begin{code}
 markMap :: [Pos] -> Map -> Map
 markMap l = cataList (either (const id) f2) (pairL l) where
-  f2 = undefined
+  f2 = composicao . ((uncurry (uncurry substM) . assocl) . split (uncurry toCell) p1 >< id) 
+  
+composicao (f,g) = f . g
+
+substM :: b -> Int -> Int -> [[b]] -> [[b]]
+substM x lin = cataNat (either g1 g2) 
+  where g1 = const (\(c:cs) -> subst x lin c : cs)
+        g2 f (c:cs) = c : f cs
 \end{code}
 
 \begin{code}
