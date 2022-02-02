@@ -1219,20 +1219,19 @@ wrapper = p2
 \end{code}
 Gene de |worker|:
 \begin{code}
-g1 () = (True,0)
-g2 (c,(a,b)) = if ((not (sep c)) && a) then (sep c, (b+1)) else (sep c, b) where
-     sep c = c == ' ' || c == '\n' || c == '\t'
+g1 = split h1 k1
+g2 = split h2 k2
 
 prop_RevRev xs = wc_w_final wc_test == 9
   where types = xs::[Int]
 \end{code}
 Genes |h = either h1 h2| e |k = either k1 k2| identificados no cálculo:
 \begin{code}
-h1 = undefined
-h2 = undefined
+h1 = const True
+h2 (c,(a,b)) = c == ' ' || c == '\n' || c == '\t'
 
-k1 = undefined
-k2 = undefined
+k1 = const 0
+k2 (c, (a,b)) = if (not (h2 (c,(a,b))) && a) then b+1 else b
 \end{code}
 
 \subsection*{Problema 3}
