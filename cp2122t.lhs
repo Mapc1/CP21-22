@@ -18,6 +18,7 @@
 \def\aspas#1{``#1"}
 %================= lhs2tex=====================================================%
 %include polycode.fmt
+%format (expn (a) (n)) = "{" a "}^{" n "}"
 %format (div (x)(y)) = x "\div " y
 %format succ = "\succ "
 %format ==> = "\Longrightarrow "
@@ -1143,12 +1144,39 @@ Valoriza-se a escrita de \emph{pouco} código que corresponda a soluções
 simples e elegantes.
 
 \subsection*{Problema 1} \label{pg:P1}
-Listas vazias:
+Para podermos determinar o gene de \textit{lTree2MTree} temos primeiro que
+observar o seu tipo:
+
+\begin{eqnarray*}
+\xymatrix@@C=4cm{
+    |LTree A| & |expn (A) (*)| \ar[l]^-{|lTree2MTree|}
+}
+\end{eqnarray*}
+Com isto, a solução formulada começa por converter a lista não vazia para o tipo
+|A + A >< A|. Assim, caso a lista tenha mais do que um elemento, dividimos a lista ao meio
+e passamos cada lista resultante a um dos ramos da árvore.
+
+Desta solução obtemos o seguinte diagrama:
+\begin{eqnarray*}
+\xymatrix@@C=4cm{
+    |LTree A|
+&
+&
+    |A + (LTree A,LTree A)| \ar[ll]^-{|inLTree|}
+\\
+    |expn (A) (*)| \ar[r]^-{|outNEList|} \ar[u]^-{|lTree2MTree|}
+&
+    |A + (A >< (expn (A) (*)))| \ar[r]^-{|either g1 g2|}
+&
+    |A + ((expn (A) (*)) >< (expn (A) (*)))| \ar[u]_-{|id + lTree2MTree >< lTree2MTree|}
+}
+\end{eqnarray*}
+Devido ao facto de que a biblioteca das listas com sinal não foram disponibilizadas,
+tivemos antes que a definir:
 \begin{code}
 outNEList [a]   = i1 a
 outNEList (h:t) = i2 (h,t)
 
-baseNEList :: (a -> b) -> (c -> d) -> Either a (a, c) -> Either b (b, d)
 baseNEList f g = f -|- (f >< g)
 
 recNEList = baseNEList id
@@ -1160,23 +1188,144 @@ anaNEList  g   = inNEList . recNEList (anaNEList g) . g
 hyloNEList h g = cataNEList h . anaNEList g
 \end{code}
 Gene do anamorfismo:
+
+Com tudo o resto definido só nos falta definir |g_list2LTree = either g1 g2 . outNEList|.
+
 \begin{code}
 g_list2LTree = either g1 g2 . outNEList where
-     g1 = i1
-     g2 (a,as) = 
-          let l = a : as 
-              n = length l `div` 2 
-          in (i2 . splitAt n) l
+    g1 = i1
+    g2 (a,as) = (i2 . splitAt n) l where
+        l = a : as
+        n = length l `div` 2
 \end{code}
 Gene do catamorfismo:
+
+Para termos uma ideia mais clara do problema em questão vamos começar por observar o tipo de lTree2MTree:
+\begin{eqnarray*}
+\xymatrix@@C=4cm{
+    |FTree |\hspace{5px}\mathbb{Z}\hspace{5px}| (|\mathbb{Z}|,A)| & |expn (A) (*)| \ar[l]^-{|lTree2MTree|}
+}
+\end{eqnarray*}
+
+Para descobrirmos o gene deste catamorfismo, temos que, como é habitual, dividir a |FTree| nos seus dois casos.
+Caso o nodo seja uma folha agrupamos o elemento com a sua hash. Caso contrário, etiquetamos o nodo com a soma das
+hashes das suas subárvores.
+
+Assim, obtemos o seguinte diagrama:
+
+\begin{eqnarray*}
+\xymatrix@@C=4cm{
+    |LTree A| \ar[r]^-{|outLTree|} \ar[d]_-{lTree2MTree}
+&
+    |A + (LTree A,LTree A)| \ar[d]^-{|id + lTree2MTree >< lTree2MTree|}
+\\
+    |FTree |\hspace{5px}\mathbb{Z}\hspace{5px}| (|\mathbb{Z}|,B)|
+&
+    |A + (FTree |\hspace{5px}\mathbb{Z}\hspace{5px}| (|\mathbb{Z}|,B),FTree |\hspace{5px}\mathbb{Z}\hspace{5px}| (|\mathbb{Z}|,B))| \ar[l]^-{|either g1 g2|}
+}
+\end{eqnarray*}
+
+Agora só nos falta definir |g = either g1 g2|.
+
+
+\begin{eqnarray*}
+\start
+	|g1 a = Unit (split (Main.hash a) a)|
+%
+\just\equiv{ Nat-id (1); Fusão-|><| (9) }
+%
+    |g1 a = Unit (split Main.hash id) a|
+%
+\just\equiv{ Igualdade Extensional (71); Def-comp (72) }
+%
+    |g1 a = Unit . split Main.hash id|
+\qed
+\end{eqnarray*}
+
+Para |g2| é necessário criar uma função |getHash| que obtém a hash das subárvores.
+\begin{eqnarray*}
+\start
+    |lcbr(
+        getHash (Unit (a,b)) = a
+    )(
+        getHash (Comp a (l,r)) = a
+    )|
+%
+\just\equiv{ Natural-|p1| (12) }
+%
+    |lcbr(
+        getHash (Unit (a,b)) = p1 (a,b)
+    )(
+        getHash (Comp a (l,r)) = p1 (a,(l,r))
+    )|    
+%
+\just\equiv{ Definição inFTree }
+%
+    |lcbr(
+        getHash (inFTree (i1 (a,b))) = p1 (a,b)
+    )(
+        getHash (inFTree (i2 (a,(l,r)))) = p1 (a,(l,r))
+    )|    
+%
+\just\equiv{ Def-comp (72) }
+%
+    |lcbr(
+        getHash . inFTree . i1 (a,b) = p1 (a,b)
+    )(
+        getHash . inFTree . i2 (a,(l,r)) = p1 (a,(l,r))
+    )|
+%
+\just\equiv{ Igualdade Extensional (71) }
+%
+    |lcbr(
+        getHash . inFTree . i1= p1
+    )(
+        getHash . inFTree . i2 = p1
+    )|
+%
+\just\equiv{ Universal-+ (17) }
+%
+    |g . inFTree = either p1 p1|
+%
+\just\equiv{ Shunt-left (33) }
+%
+    |g = either p1 p1 . outFTree|
+\qed
+\end{eqnarray*}
+
+\begin{eqnarray*}
+\start
+	|g2 (l,r) = Comp (concHash (split (getHash l) (getHash r))) (l,r)|
+%
+\just\equiv{ Fusão-|><| (9); Natural-$\pi_1$; Natural-$\pi_2$ }
+%
+    |g2 (l,r) = Comp (concHash (split (getHash . p1) (getHash . p2) (l,r))) (l,r)|
+%
+\just\equiv{ Uncurry (84); Natural-id (1); Fusão-|><| (9) }
+%
+    |g2 (l,r) = uncurry Comp (split (concHash . split (getHash . p1) (getHash . p2)) id) (l,r)|
+%
+\just\equiv{ Igualdade Extensional (71) }
+%
+    |g2 = uncurry Comp (split (concHash . split (getHash . p1) (getHash . p2)) (id))|
+%
+\just\equiv{ Def-|><| (9) }
+%
+    |g2 = uncurry Comp (split (concHash . (getHash >< getHash)) id)|
+\just\equiv{ Def-comp (72) }
+%
+    |g2 = uncurry Comp . split (concHash . (getHash >< getHash)) id|
+\qed
+\end{eqnarray*}
+
 \begin{code}
+getHash = either p1 p1 . outFTree
+
 g_lTree2MTree :: Hashable c => Either c (FTree Integer (Integer, c), FTree Integer (Integer, c)) -> FTree Integer (Integer, c)
 g_lTree2MTree = either g1 g2 where
      g1 = Unit . split Main.hash id
-     g2 = uncurry Comp . split (concHash . (getHash >< getHash)) id where
-          getHash (Unit (a,b)) = a
-          getHash (Comp a (b,c)) = a
-      
+     g2 = uncurry Comp . split (concHash . (getHash >< getHash)) id
+          
 \end{code}
 Gene de |mroot| ("get Merkle root"):
 \begin{code}
@@ -1217,6 +1366,19 @@ wc_w_final = wrapper . worker
 worker = cataList (either g1 g2)
 wrapper = p2
 \end{code}
+
+\begin{eqnarray*}
+\xymatrix@@C=4cm{
+    |expn (Char) (*)| \ar[r]^-{|outList|} \ar[d]_-{|worker|}
+&
+    |1 + (Char >< (expn (Char) (*)))| \ar[d]^-{|id + id >< worker|}
+\\
+    |Bool >< |\mathbb{N}    
+&
+    |1 + (Char >< (Bool >< |\mathbb{N}|))| \ar[l]^-{|either g1 g2|}
+}
+\end{eqnarray*}
+
 Gene de |worker|:
 \begin{code}
 g1 = split h1 k1
