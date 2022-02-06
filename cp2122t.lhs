@@ -1181,7 +1181,6 @@ g_lTree2MTree = either g1 g2 where
 Gene de |mroot| ("get Merkle root"):
 \begin{code}
 
--- No idea if this is correct. Have to ask the teachers what I am supposed to do here 
 g_mroot = either g1 g2 where
      g1 = p1
      g2 = add . split p1 (add . p2) 
