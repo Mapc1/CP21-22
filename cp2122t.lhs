@@ -1613,7 +1613,7 @@ Por fim, a função $|substM|$ é um catamorfismo de naturais que trata do passo
 Na função $|substM|$ temos dois casos:
 \begin{enumerate}
      \item $|g1|$: caso em que a linha é $|0|$
-     \item $|f2|$: caso resursivo
+     \item $|g2|$: caso resursivo
 \end{enumerate}
 
 Através da função $|substM|$ é possível gerar uma função que gera mapas a partir de mapas através do elemento a substituir e à posição onde substitui-lo.
