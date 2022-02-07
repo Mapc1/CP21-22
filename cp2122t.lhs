@@ -1404,6 +1404,17 @@ k2 (c, (a,b)) = if (not (h2 (c,(a,b))) && a) then b+1 else b
 
 \subsection*{Problema 3}
 
+O isomorfismo inX/outX é representado pelo seguinte diagrama:
+\begin{eqnarray*}
+\xymatrix@@C=4cm{
+    |A + (B >< (expn (X A B) (2)))| \ar[r]^-{|inX|}
+&
+    |X A B| \ar[l]^-{|outX|}
+}
+\end{eqnarray*} 
+
+A partir deste concluímos que as funções in e out de X são as seguintes:
+
 \begin{code}
 inX :: Either u (i, (X u i, X u i)) -> X u i
 inX (Left u) = XLeaf u
@@ -1412,39 +1423,141 @@ inX (Right (i, (l, r))) = Node i l r
 outX (XLeaf u) = i1 u
 outX (Node i l r) = i2 (i, (l, r))
 
+\end{code}
+A partir do tipo |A + (B >< (expn (X A B) (2)))| criamos ambos bifuntor e funtor.
+\begin{code}
 baseX f h g = f -|- (h><(g><g))
 
 recX f = baseX id id f
+\end{code}
+As funções cataX, anaX e hyloX são criadas a partir dos diagramas respetivos:
+\begin{eqnarray*}
+\xymatrix@@C=4cm{
+    |X A B| \ar[r]^-{|out|} \ar[d]_-{|cata g|}
+&
+    |A + (B >< ((X A B) >< (X A B)))| \ar[d]^-{|id + id >< (cata g)|}
+\\
+    |C|   
+&
+    |A + (B >< (C >< C))| \ar[l]^-{|g|}
+}
+\end{eqnarray*}
 
+Assim concluímos que |cata g = g . (id + id >< cata g) . out| 
+
+\begin{code}
 cataX g = g . (recX (cataX g)) . outX
-
+\end{code}
+\begin{eqnarray*}
+\xymatrix@@C=4cm{
+    |X B C|
+&
+    |B + (C >< ((X B C) >< (X B C)))|  \ar[l]_-{|in|}
+\\
+    |A| \ar[r]_-{|g|} \ar[u]^-{|ana g|}
+&
+    |B + (C >< (A >< A))| \ar[u]_-{|id + id >< (ana g)|}
+}
+\end{eqnarray*}
+Logo, |ana g = in . (id + id >< (ana g)) . g|
+\begin{code}
 anaX g = inX . (recX (anaX g)) . g
-
-hyloX h g = cataX h . cataX g
+\end{code}
+\begin{eqnarray*}
+\xymatrix@@C=4cm{
+    |C|   
+&
+    |A + (B >< (C >< C))| \ar[l]^-{|g|}
+\\
+    |X B C| \ar[u]^-{|cata g|} \ar[r]_-{|out|}
+&
+    |B + (C >< ((X B C) >< (X B C)))|  \ar[l]_-{|in|} \ar[u]_-{|id + id >< (cata g)|}
+\\
+    |A| \ar[r]_-{|g|} \ar[u]^-{|ana g|}
+&
+    |B + (C >< (A >< A))| \ar[u]_-{|id + id >< (ana g)|}
+}
+\end{eqnarray*}
+Como é possível observar no diagrama, o hilomorfismo é apenas a junção do catamorfismo
+e do anamorfismo que acabamos de criar.
+\begin{code}
+hyloX h g = cataX h . anaX g
 \end{code}
 
-Inserir a partir daqui o resto da resolução deste problema:
+Para criarmos a biblioteca para um número variável de partições, temos antes que 
+escrever o seu tipo. Neste caso, em vez de ter um par de filhos, cada nodo tem uma lista destes.  
 
-....
+Deste modo, o seu tipo pode ser escrito em Haskell do seguinte modo:
 \begin{code}
 data XNary u i = NLeaf u | NNode i [XNary u i] deriving (Show,Eq)
-
+\end{code}
+Agora seguimos os mesmos passos que usamos para criar a biblioteca anterior.
+\begin{eqnarray*}
+\xymatrix@@C=4cm{
+    |A + (B >< (expn ((XNary A B)) (*)))| \ar[r]^-{|inX|}
+&
+    |XNary A B| \ar[l]^-{|outX|}
+}
+\end{eqnarray*} 
+\begin{code}
 inXNary (Left u) = NLeaf u
 inXNary (Right (i, l)) = NNode i l
 
 outXNary (NLeaf u) = i1 u
 outXNary (NNode i l) = i2 (i, l)
-
+\end{code}
+Como, neste tipo, um nodo tem uma lista de filhos, o bifuntor e o funtor fazem uso do |map|.
+\begin{code}
 baseXNary f h g = f -|- (h >< map g)
 
 recXNary f = baseXNary id id f
-
-cataXNary g = g . (recXNary (cataXNary g)) . outXNary
-
-anaXNary g = inXNary . (recXNary (anaXNary g)) . g
-
 \end{code}
-
+\begin{eqnarray*}
+\xymatrix@@C=4cm{
+    |XNary A B| \ar[r]^-{|out|} \ar[d]_-{|cata g|}
+&
+    |A + (B >< (expn ((XNary A B)) (*)))| \ar[d]^-{|id + id >< (map (cata g))|}
+\\
+    |C|   
+&
+    |A + (B >< (expn (C) (*)))| \ar[l]^-{|g|}
+}
+\end{eqnarray*}
+\begin{code}
+cataXNary g = g . (recXNary (cataXNary g)) . outXNary
+\end{code}
+\begin{eqnarray*}
+\xymatrix@@C=4cm{
+    |XNary B C|
+&
+    |B + (C >< (expn ((XNary B C)) (*)))|  \ar[l]_-{|in|}
+\\
+    |A| \ar[r]_-{|g|} \ar[u]^-{|ana g|}
+&
+    |B + (C >< (expn (A) (*)))| \ar[u]_-{|id + id >< (map (ana g))|}
+}
+\end{eqnarray*}
+\begin{code}
+anaXNary g = inXNary . (recXNary (anaXNary g)) . g
+\end{code}
+\begin{eqnarray*}
+\xymatrix@@C=4cm{
+    |C|   
+&
+    |A + (B >< (expn (C) (*)))| \ar[l]^-{|g|}
+\\
+    |XNary B C| \ar[u]^-{|cata g|} \ar[r]_-{|out|}
+&
+    |B + (C >< (expn ((XNary B C)) (*)))|  \ar[l]_-{|in|} \ar[u]_-{|id + id >< (map (cata g))|}
+\\
+    |A| \ar[r]_-{|g|} \ar[u]^-{|ana g|}
+&
+    |B + (C >< (expn (A) (*)))| \ar[u]_-{|id + id >< (map (ana g))|}
+}
+\end{eqnarray*}
+\begin{code}
+hyloXNary h g = cataXNary h . anaXNary g
+\end{code}
 \subsection*{Problema 4}
 
 \begin{code}
