@@ -1566,6 +1566,63 @@ pairL = anaList g where
      g (h:i:t) = Right ((h,i),(i:t))
 \end{code}
 
+
+\xymatrix@@C=2cm{
+    |(Pos >< Pos)|^*
+           \ar[d]_-{|cataList g|}
+&
+    |1 + (Pos >< Pos) >< (Pos >< Pos)|^*
+           \ar[d]^{|id + id >< cataList g|}
+           \ar[l]_-{|inList = either nil cons|}
+\\
+     |Map|^{Map}
+&
+     |1 + (Pos >< Pos) >< Map|^{Map}
+           \ar[l]^-{|g = either (const id) f2|}
+}
+\end{eqnarray*}
+O diagrama acima foi criado com o objetivo de visualizar o funcionamento de $|f2|$. Esta recebe um $tuple$ cujo primeiro elemento é um $tuple$ de posições e o segundo uma
+função que, dado um mapa, gera um mapa. O diagram facilita o entendimento de que $|f2|$ gera uma função que gera um mapa quando receber um
+mapa. Assim, deduzimos que o comportamento funcional de $|f2|$ passa por (A): processar o primeiro elemento do tuplo e gerar uma função que dado um mapa gera um mapa e de seguida (B):
+compor a nova função com o 2º elemento do tuplo, gerando uma nova função capaz de gerar um mapa quando receber um mapa.
+
+
+Passo (A): Primeiro, é necessário determinar a célula que vai substituir a célula existente com o auxílio da função $|toCell|$. Ao verificar o código fornecido para este trabalho prático, verificou-se que esta função recebe como entrada duas posições e não um $tuple$ de posições, portanto utilizou-se $uncurry$. 
+Nestas condições, $|uncurry toCell|$ é capaz de gerar uma nova célula.
+Tendo a célula gerada, a substituição é feita na posição indicada pelo primeiro elemento do $tuple$ de posições.
+Por fim, a função $|substMatrix|$ é um catamorfismo de naturais que trata do passo de gerar a função que é capaz de gerar um mapa quando receber um mapa. Esta função faz uso da função $|subst|$ já disponibilizada, recebendo um elemento da substituir, e a posição (coluna e linha) onde deve ser efetuada a substituição.
+
+\begin{eqnarray*}
+\xymatrix@@C=2cm{
+    |Nat0|
+           \ar[d]_-{|substMatrix x coluna|}
+&
+    |1 + Nat0|
+           \ar[d]^{|id + (substMatrix x coluna)|}
+           \ar[l]_-{|inNat|}
+\\
+     |Map|^{Map}
+&
+     |1 + Map|^{Map}
+           \ar[l]^-{|g = either g1 g2|}
+}
+\end{eqnarray*}
+
+
+Na função $|substMatrix|$ temos dois casos:
+\begin{enumerate}
+     \item $|g1|$: caso em que a linha é $|0|$
+     \item $|f2|$: caso resursivo
+\end{enumerate}
+
+Através da função $|substMatrix|$ é possível gerar uma função que gera mapas a partir de mapas através do elemento a substituir e à posição onde substitui-lo.
+Temos $|split (uncurry toCell) p1|$ que devolve um $tuple$ com o elemento a substituir no primeiro elemento e a posição onde
+substituilo no segundo. Utilizamos $|uncurry (uncurry substMatrix) . assocl|$ para que a  função $|substMatrix|$ possa aceitar esse tipo à entrada, e possa gerar uma função que gera mapas a partir de mapas recebendo um $tuple$
+como o descrito à entrada.
+
+Passo (B): O segundo e último passo consiste em compor duas funções presentes num $tuple$ através da auxiliar $|composicao|$, obtendo $|f2|$ = $|composicao . ((uncurry (uncurry substM) . assocl) . split (uncurry toCell) p1 >< id) )|$.
+
+
 \begin{code}
 markMap :: [Pos] -> Map -> Map
 markMap l = cataList (either (const id) f2) (pairL l) where
