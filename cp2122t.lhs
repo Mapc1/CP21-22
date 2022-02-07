@@ -152,7 +152,7 @@ a93179 & Rui Monteiro
 \\
 a93201 & Rodrigo Rodrigues
 \\
-a03324 & Daniel Azevedo
+a93324 & Daniel Azevedo
 \\
 a93283 & Marco Costa
 \end{tabular}
