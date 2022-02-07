@@ -1379,15 +1379,55 @@ g_mroot = either g1 g2 where
      g1 = p1
      g2 = add . (id >< add) 
 \end{code}
+
+Exercício 1.4:
+
+Como a etiqueta da Merkel root é a soma de todas as hashes dos nodos das subárvores, uma alteração
+num dos elementos alterará as etiquetas de todos os nodos superiores e, obviamente, da Merkel root também.
+
 Valorização:
+
+\begin{eqnarray*}
+\start
+    |lcbr(
+        g_pairsList [] = i1 ()
+    )(
+        g_pairsList (h : t) = i2 ((h,head t), tail t)
+    )|
+\just\equiv{ Definições |p1 (a,b) = a|; |p2 (a,b) = b| }
+    |lcbr(
+        g_pairsList . nil = i1 . outList . getEvenBlock ()
+    )(
+        g_pairsList . cons (h,t) = i2 . split (split p1, head . p2) (tail . p2) . outList . getEvenBlock (h,t)
+    )|
+\just\equiv{ Igualdade Extensional (71) }
+    |lcbr(
+        g_pairsList . nil = i1
+    )(
+        g_pairsList . cons = i2 . split (split p1, head . p2) (tail . p2)
+    )|
+\just\equiv{ Natural-id (1); Def-|><| (10) }
+    |lcbr(
+        g_pairsList . nil = i1
+        g_pairsList . cons = i2 . split (id >< head) (tail . p2)
+    )|
+\just\equiv{ Eq-+ (27) }
+    |g_pairsList . [nil,cons] = either i1 (i2 . split (id >< head) (tail . p2))|
+\just\equiv{ Definição |in = either nil cons|; Shunt-Left (33) }
+    |g_pairsList = either i1 (i2 .split (i1 >< head) (tail . p2)) . out|
+\qed
+\end{eqnarray*}
+
+Como forma de garantirmos que há sempre um número par de elementos, antes de executarmos o
+anamorfismo executamos a função |getEvenBlock|.
 
 \begin{code}
 pairsList :: [a] -> [(a, a)]
-pairsList = anaList (g_pairsList)
+pairsList = anaList (g_pairsList) . getEvenBlock
 
-g_pairsList = either g1 g2 . outList . getEvenBlock where
+g_pairsList = either g1 g2 . outList where
      g1 = i1
-     g2 = i2 . split (split p1 (head . p2)) (tail . p2)
+     g2 = i2 . split (id >< head) (tail . p2)
 
 classicMerkleTree :: Hashable a => [a] -> FTree Integer Integer
 classicMerkleTree = (hyloNEList conquer divide) . (map Main.hash)
