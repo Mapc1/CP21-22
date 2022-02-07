@@ -1366,6 +1366,10 @@ worker = cataList (either g1 g2)
 wrapper = p2
 \end{code}
 
+Para resolvermos o problema, recorremos à recursividade mútua em que no primeiro elemento
+calculamos |lookahead_sep| e no segundo usamos o resultado da recursividade para saber se se deve, ou não,
+incrementar o acomulador.
+
 \begin{eqnarray*}
 \xymatrix@@C=4cm{
     |expn (Char) (*)| \ar[r]^-{|outList|} \ar[d]_-{|worker|}
@@ -1379,12 +1383,15 @@ wrapper = p2
 \end{eqnarray*}
 
 Gene de |worker|:
+
+Como worker é o catamorfismo de duas funções |h| e |k| em recursividade mútua,
+concluímos que |either g1 g2 = either (split h1 k1) (split h2 k2)|.
+
+Assim, através da lei Eq-+ (17) temos:
+
 \begin{code}
 g1 = split h1 k1
 g2 = split h2 k2
-
-prop_RevRev xs = wc_w_final wc_test == 9
-  where types = xs::[Int]
 \end{code}
 Genes |h = either h1 h2| e |k = either k1 k2| identificados no cálculo:
 \begin{code}
