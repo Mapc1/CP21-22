@@ -1328,11 +1328,54 @@ g_lTree2MTree = either g1 g2 where
           
 \end{code}
 Gene de |mroot| ("get Merkle root"):
+
+Para obtermos a Merkel root, temos que somar todos os hashes da Merkel tree. Assim, ficamos com o seguinte código:
+
+\begin{eqnarray*}
+\start
+    |lcbr(
+        g_mroot (Unit (h,a)) = h
+    )(
+        g_mroot (Comp h (l,r)) = h + l + r
+    )|
+\just\equiv{ Uncurry (84) }
+    |lcbr(
+        g_mroot (Unit (h,a)) = h
+    )(
+        g_mroot (Comp h (l,r)) = uncurry (+) (h,(uncurry (+) (l,r)))
+    )|
+\just\equiv{ Definição |add = uncurry (+)| }
+    |lcbr(
+        g_mroot (Unit (h,a)) = h
+    )(
+        g_mroot (Comp h (l,r)) = add (h,(add (l,r)))
+    )|
+\just\equiv{ Definições |in|; |p1 (a,b) = a|; |p2 (a,b) = b| }
+    |lcbr(
+        g_mroot . in (i1 (h,a)) = p1 (h,a)
+    )(
+        g_mroot . in (i2 (h,(l,r))) = add split p1 (add . p2) (h,(l,r))
+    )|
+\just\equiv{ Def-comp (72); Igualdade Extensional (71) }
+    |lcbr(
+        g_mroot . in . i1 = p1
+    )(
+        g_mroot . in . i2 = add . split p1 (add . p2)
+    )|
+\just\equiv{ Natural-id (1); Def-|><| (10) }
+    |lcbr(
+        g_mroot . in . i1 = p1
+    )(
+        g_mroot . in . i2 = add . (id >< add)
+    )|
+\qed
+\end{eqnarray*}
+
 \begin{code}
 
 g_mroot = either g1 g2 where
      g1 = p1
-     g2 = add . split p1 (add . p2) 
+     g2 = add . (id >< add) 
 \end{code}
 Valorização:
 
