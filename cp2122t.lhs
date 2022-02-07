@@ -1567,6 +1567,7 @@ pairL = anaList g where
 \end{code}
 
 
+\begin{eqnarray*}
 \xymatrix@@C=2cm{
     |(Pos >< Pos)|^*
            \ar[d]_-{|cataList g|}
