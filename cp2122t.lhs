@@ -1590,15 +1590,15 @@ compor a nova função com o 2º elemento do tuplo, gerando uma nova função ca
 Passo (A): Primeiro, é necessário determinar a célula que vai substituir a célula existente com o auxílio da função $|toCell|$. Ao verificar o código fornecido para este trabalho prático, verificou-se que esta função recebe como entrada duas posições e não um $tuple$ de posições, portanto utilizou-se $uncurry$. 
 Nestas condições, $|uncurry toCell|$ é capaz de gerar uma nova célula.
 Tendo a célula gerada, a substituição é feita na posição indicada pelo primeiro elemento do $tuple$ de posições.
-Por fim, a função $|substMatrix|$ é um catamorfismo de naturais que trata do passo de gerar a função que é capaz de gerar um mapa quando receber um mapa. Esta função faz uso da função $|subst|$ já disponibilizada, recebendo um elemento da substituir, e a posição (coluna e linha) onde deve ser efetuada a substituição.
+Por fim, a função $|substM|$ é um catamorfismo de naturais que trata do passo de gerar a função que é capaz de gerar um mapa quando receber um mapa. Esta função faz uso da função $|subst|$ já disponibilizada, recebendo um elemento da substituir, e a posição (coluna e linha) onde deve ser efetuada a substituição.
 
 \begin{eqnarray*}
 \xymatrix@@C=2cm{
     |Nat0|
-           \ar[d]_-{|substMatrix x coluna|}
+           \ar[d]_-{|substM x coluna|}
 &
     |1 + Nat0|
-           \ar[d]^{|id + (substMatrix x coluna)|}
+           \ar[d]^{|id + (substM x coluna)|}
            \ar[l]_-{|inNat|}
 \\
      |Map|^{Map}
@@ -1609,15 +1609,15 @@ Por fim, a função $|substMatrix|$ é um catamorfismo de naturais que trata do 
 \end{eqnarray*}
 
 
-Na função $|substMatrix|$ temos dois casos:
+Na função $|substM|$ temos dois casos:
 \begin{enumerate}
      \item $|g1|$: caso em que a linha é $|0|$
      \item $|f2|$: caso resursivo
 \end{enumerate}
 
-Através da função $|substMatrix|$ é possível gerar uma função que gera mapas a partir de mapas através do elemento a substituir e à posição onde substitui-lo.
+Através da função $|substM|$ é possível gerar uma função que gera mapas a partir de mapas através do elemento a substituir e à posição onde substitui-lo.
 Temos $|split (uncurry toCell) p1|$ que devolve um $tuple$ com o elemento a substituir no primeiro elemento e a posição onde
-substituilo no segundo. Utilizamos $|uncurry (uncurry substMatrix) . assocl|$ para que a  função $|substMatrix|$ possa aceitar esse tipo à entrada, e possa gerar uma função que gera mapas a partir de mapas recebendo um $tuple$
+substituilo no segundo. Utilizamos $|uncurry (uncurry substM) . assocl|$ para que a  função $|substM|$ possa aceitar esse tipo à entrada, e possa gerar uma função que gera mapas a partir de mapas recebendo um $tuple$
 como o descrito à entrada.
 
 Passo (B): O segundo e último passo consiste em compor duas funções presentes num $tuple$ através da auxiliar $|composicao|$, obtendo $|f2|$ = $|composicao . ((uncurry (uncurry substM) . assocl) . split (uncurry toCell) p1 >< id) )|$.
